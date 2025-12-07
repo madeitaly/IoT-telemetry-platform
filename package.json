@@ -1,0 +1,16 @@
+{
+  "name": "iot-telemetry-platform",
+  "version": "1.0.0",
+  "description": "IoT Telemetry Platform for portfolio purposes",
+  "license": "ISC",
+  "author": "Matteo De Cicco",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1"
+  }
+}
