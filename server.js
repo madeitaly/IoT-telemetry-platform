@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import morgan from "morgan";
 import express from "express";
 
 const app = express()
@@ -6,6 +7,8 @@ const app = express()
 //Environmental Variables
 const port = process.env.PORT;
 
+// MIDDLEWARE //
+app.use(morgan("dev"));
 
 /////////////////////////////////////
 //  ROUTING OF THE HTTPS REQUESTS ///
