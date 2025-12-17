@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client"
-  // provider = "prisma-client-js"    //from Google Gemini
   output   = "../src/generated/prisma"
 }
 
@@ -14,6 +13,9 @@ datasource db {
   provider = "postgresql"
 }
 
+//////////////////////////////////
+//         USER MODEL           //
+//////////////////////////////////
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -21,11 +23,56 @@ model User {
   role      Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  devices   Device[]
 }
 
 enum Role {
   USER
   ADMIN
+}
+
+
+//////////////////////////////////
+//         DEVICE MODEL         //
+//////////////////////////////////
+model Device {
+  id          Int      @id @default(autoincrement())
+  serial      String   @unique // Unique identifier for the device
+  name        String
+  location    String?  // Optional location string
+  ownerId     Int      // Foreign key linking to the User who registered it
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastSeen    DateTime?
+
+  // Relationship: Each device must be owned by one User
+  owner       User     @relation(fields: [ownerId], references: [id])
+    
+  telemetry   Telemetry[]
+  //alerts      Alert[]
+  tokens      DeviceRegistrationToken[]
+
+  @@index([ownerId]) // Indexing the foreign key for faster queries
+}
+
+model Telemetry {
+  id          Int      @id @default(autoincrement())
+  deviceId    Int
+  ts          DateTime @default(now())
+  payload     Json
+  temperature Float?
+  humidity    Float?
+  battery     Float?
+  device     Device   @relation(fields: [deviceId], references: [id])
+  @@index([deviceId, ts])
+}
+
+model DeviceRegistrationToken {
+  id        Int      @id @default(autoincrement())
+  deviceId  Int
+  token     String   @unique
+  expiresAt DateTime
+  device    Device   @relation(fields: [deviceId], references: [id])
 }
 
 
@@ -42,17 +89,6 @@ enum Role {
   tokens      DeviceRegistrationToken[]
 }
 
-model Telemetry {
-  id         String   @id @default(uuid())
-  deviceId   String
-  ts         DateTime @default(now())
-  payload    Json
-  temperature Float?
-  humidity    Float?
-  battery     Float?
-  device     Device   @relation(fields: [deviceId], references: [id])
-  @@index([deviceId, ts])
-}
 
 model Alert {
   id        String   @id @default(uuid())
@@ -62,11 +98,4 @@ model Alert {
   payload   Json
   device    Device   @relation(fields: [deviceId], references: [id])
 }
-
-model DeviceRegistrationToken {
-  id        String   @id @default(uuid())
-  deviceId  String
-  token     String   @unique
-  expiresAt DateTime
-  device    Device   @relation(fields: [deviceId], references: [id])
-} */
+*/
