@@ -12,6 +12,12 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,                      /* Include modules imported via .json files */
 
+    // FIX for EXTENSIONS .js
+    // "noEmit": true, // Recommended when using ts-node to prevent unnecessary file emission
+    // "noEmitOnError": true, // Reset this to true if you are running `tsc`
+    // "allowImportingTsExtensions": true,
+    // "allowJs": true,
+
     "target": "ES2023",
     "esModuleInterop": true,  /* Enables compatibility for default imports (e.g., allows `import express from 'express'` instead of `import * as express from 'express'`) */
     //"forceConsistentCasingInFileNames": true,       /* Ensure file names are correctly cased (important for Unix systems) */
