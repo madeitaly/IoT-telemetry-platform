@@ -10,6 +10,7 @@ import {
     updateDevice, 
     deleteDevice 
 } from './device.controller.js';
+import { ingestTelemetry, fetchTelemetry } from './telemetry.controller.js';
 import { authenticateToken } from './auth.middleware.js';
 
 // Load environment variables from .env file
@@ -35,6 +36,9 @@ app.use(express.json());
 app.post('/auth/register', register);
 app.post('/auth/login', login);
 
+// --- Device Ingestion (Uses Device Token) ---
+app.post('/api/telemetry', ingestTelemetry);
+
 // --- Protected Route ---
 // All subsequent routes require a valid JWT
 app.use('/api', authenticateToken); // <-- Apply middleware to ALL /api routes
@@ -48,6 +52,9 @@ app.get('/api/devices', getDevices);
 app.get('/api/devices/:id', getDevice);
 app.patch('/api/devices/:id', updateDevice);
 app.delete('/api/devices/:id', deleteDevice);
+// Fetching telemetry history (User looking at device data)
+app.get('/api/telemetry/:deviceId', fetchTelemetry);
+
 
 
 app.listen(LOCAL_PORT, () => {
