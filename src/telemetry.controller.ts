@@ -11,10 +11,9 @@ export async function ingestTelemetry(req: Request, res: Response) {
     if (!deviceId) return res.status(403).json({ error: 'Invalid or expired token' });
 
     try {
-        const { telemetry, device } = await telemetryService.saveTelemetry(deviceId, req.body);
         const entry = await telemetryService.saveTelemetry(deviceId, req.body);
 
-        res.status(201).json({ status: 'success' });
+        res.status(202).json({ status: 'success' });
     } catch (err) {
         res.status(500).json({ error: 'Ingestion failed' });
     }
