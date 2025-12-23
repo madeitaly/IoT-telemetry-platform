@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv'; // For loading environment variables
 import morgan from "morgan";
 import express from "express";
 import { register, login, getProfile } from './auth.controller.js';
-import { createDevice, getDevices, getDevice, updateDevice, deleteDevice } from './device.controller.js';
+import { createDevice, getDevices, getDevice, updateDevice, deleteDevice, getFleetStatus } from './device.controller.js';
 import { ingestTelemetry, fetchTelemetry } from './telemetry.controller.js';
 import { authenticateToken } from './auth.middleware.js';
 // Load environment variables from .env file
@@ -27,6 +27,7 @@ app.post('/api/telemetry', ingestTelemetry);
 app.use('/api', authenticateToken); // <-- Apply middleware to ALL /api routes
 // --- Protected Authentication Routes ---
 app.get('/api/profile', getProfile);
+app.get('/api/devices/status-summary', authenticateToken, getFleetStatus);
 // --- Protected Device Routes ---
 app.post('/api/devices', createDevice);
 app.get('/api/devices', getDevices);

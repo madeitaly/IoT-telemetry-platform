@@ -1,3 +1,4 @@
+import * as redisService from './redis.service.js';
 import * as deviceService from './device.service.js';
 // Helper to handle 404 (Not Found) responses
 const handleNotFound = (res) => {
@@ -105,6 +106,38 @@ export async function deleteDevice(req, res) {
         }
         console.error('Delete device error:', error);
         res.status(500).json({ error: 'Internal server error.' });
+    }
+}
+/**
+ * GET /api/devices/status-summary
+ * Returns all user devices paired with their latest real-time telemetry from Redis.
+ */
+export async function getFleetStatus(req, res) {
+    const ownerId = req.userId;
+    try {
+        // 1. Get the list of devices from the DB (Source of Truth for ownership)
+        const devices = await deviceService.getDevicesByOwner(ownerId);
+        const deviceIds = devices.map(d => d.id);
+        // 2. Fetch the "Hot Data" from Redis
+        const liveStates = await redisService.getLatestStates(deviceIds);
+        // 3. Merge DB info (names, serials) with Redis info (temp, battery)
+        const summary = devices.map(device => {
+            const liveData = liveStates.find(s => s.deviceId === device.id);
+            return {
+                id: device.id,
+                name: device.name,
+                serial: device.serial,
+                location: device.location,
+                lastSeen: device.lastSeen,
+                status: liveData?.state ? 'online' : 'offline',
+                telemetry: liveData?.state || null
+            };
+        });
+        res.json(summary);
+    }
+    catch (error) {
+        console.error('Fleet status error:', error);
+        res.status(500).json({ error: 'Failed to aggregate fleet status' });
     }
 }
 //# sourceMappingURL=device.controller.js.map

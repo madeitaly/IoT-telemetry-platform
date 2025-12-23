@@ -5,34 +5,14 @@ export declare function validateDeviceToken(token: string): Promise<number | nul
 /**
  * Saves telemetry data to the DB.
  */
-export declare function saveTelemetry(deviceId: number, data: any): Promise<{
-    telemetry: {
-        id: number;
-        deviceId: number;
-        ts: Date;
-        payload: import("@prisma/client/runtime/client").JsonValue;
-        temperature: number | null;
-        humidity: number | null;
-        battery: number | null;
-    };
-    device: {
-        name: string;
-        id: number;
-        createdAt: Date;
-        updatedAt: Date;
-        serial: string;
-        location: string | null;
-        ownerId: number;
-        lastSeen: Date | null;
-    };
-}>;
+export declare function saveTelemetry(deviceId: number, data: any): Promise<void>;
 /**
  * Retrieves telemetry for a specific device within a timeframe.
  */
 export declare function getTelemetry(deviceId: number, start: Date, end: Date): Promise<{
     id: number;
-    deviceId: number;
     ts: Date;
+    deviceId: number;
     payload: import("@prisma/client/runtime/client").JsonValue;
     temperature: number | null;
     humidity: number | null;

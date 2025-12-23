@@ -1,4 +1,6 @@
 import { prisma } from './prisma-client.js';
+import redis from './redis.service.js';
+import { telemetryQueue } from './queue.js';
 /**
  * Validates a device token and returns the associated deviceId.
  */
@@ -15,25 +17,27 @@ export async function validateDeviceToken(token) {
  * Saves telemetry data to the DB.
  */
 export async function saveTelemetry(deviceId, data) {
-    // We use a transaction to ensure both the telemetry log 
-    // and the device status are updated together.
-    return prisma.$transaction(async (tx) => {
-        // 1. Create the telemetry record
-        const telemetry = await tx.telemetry.create({
-            data: {
-                deviceId,
-                payload: data.payload || {},
-                temperature: data.temperature,
-                humidity: data.humidity,
-                battery: data.battery,
-            }
-        });
-        // 2. Update the Device lastSeen
-        const device = await tx.device.update({
-            where: { id: deviceId },
-            data: { lastSeen: new Date() }
-        });
-        return { telemetry, device };
+    // 1. Cache the "Latest State" in Redis as a JSON string
+    // This key will expire in 1 hour if no new data arrives
+    console.log(JSON.stringify(data));
+    const redisKey = `device:latest:${deviceId}`;
+    await redis.set(redisKey, JSON.stringify({
+        temperature: data.temperature,
+        humidity: data.humidity,
+        battery: data.battery,
+        payload: data.payload,
+        ts: new Date()
+    }), {
+        EX: 3600
+    });
+    // 2. OFF-LOAD TO QUEUE (Instant)
+    // We don't 'await' the DB write, we just 'await' putting it in the queue
+    await telemetryQueue.add('sync-db', {
+        deviceId,
+        data: data
+    }, {
+        removeOnComplete: true, // Keep Redis clean
+        attempts: 3 // Retry if DB is down
     });
 }
 /**
